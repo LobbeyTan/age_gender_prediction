@@ -15,6 +15,8 @@ class WikiDataset(Dataset):
             os.path.join(root_dir, "preprocessed_data.csv")
         )
 
+        self.images, self.paths = self.extractImages()
+
         train_size = int(self.data.shape[0] * tts_ratio)
         test_size = self.data.shape[0] - train_size
 
@@ -38,15 +40,27 @@ class WikiDataset(Dataset):
                 f"{index} is out of bound, dataset has only {self.size} records"
             )
 
-        img = Image.open(
-            os.path.join(self.root_dir, self.data['image_path'][index])
-        ).convert('RGB')
-
+        img = self.images[index]
+        path = self.paths[index]
         age = int(self.data['age'][index])
         gender = int(self.data['gender'][index])
 
         return {
             'img': self.transform(img),
+            'path': path,
             'age': age,
             'gender': gender,
         }
+
+    def extractImages(self):
+        paths = []
+        images = []
+
+        for file in self.data['image_path']:
+            path = os.path.join(self.root_dir, file)
+            img = Image.open(path).convert('RGB')
+
+            paths.append(path)
+            images.append(img)
+
+        return images, paths
