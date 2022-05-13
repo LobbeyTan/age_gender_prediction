@@ -8,7 +8,8 @@ class Classifier(nn.Module):
 
         self.layers = [
             nn.Flatten(),
-            nn.Linear(131072, n_output),
+            nn.Linear(32768, 4096),
+            nn.Linear(4096, n_output),
             nn.Softmax(dim=1)
         ]
 

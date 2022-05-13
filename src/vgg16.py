@@ -50,7 +50,7 @@ class VGG16(nn.Module):
         self.relu5_3 = nn.ReLU(inplace=True)
         self.maxpool5 = nn.MaxPool2d(kernel_size=2, stride=2)
 
-    def forward(self, x, vgg_choose="relu5_3"):
+    def forward(self, x, vgg_choose="all"):
         h = self.relu1_1(self.conv1_1(x))
         h = self.relu1_2(self.conv1_2(h))
         relu1_2 = h
@@ -101,6 +101,8 @@ class VGG16(nn.Module):
             return relu5_2
         if vgg_choose == "relu5_3":
             return relu5_3
+        if vgg_choose == 'all':
+            return h
 
         return h
 
