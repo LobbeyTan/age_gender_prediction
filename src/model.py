@@ -1,21 +1,22 @@
 import os
 from torch import nn
 import torch
+import torchvision.transforms as transforms
 from src.network import Classifier
-from src.vgg16 import load_vgg16
+from src.vgg16 import load_vgg16, vgg_preprocess
 
 
 class AgeGenderPredictor(nn.Module):
 
-    def __init__(self, lr=0.001, beta1=0.5, device=torch.device("cpu")) -> None:
+    def __init__(self, lr=0.001, beta1=0.5, device=torch.device("cpu"), vgg_path="./src/pretrained/vgg16.weight") -> None:
 
         super(AgeGenderPredictor, self).__init__()
 
         self.device = device
 
-        self.vgg = load_vgg16("./src/pretrained/vgg16.weight", self.device)
+        self.vgg = load_vgg16(vgg_path, self.device)
 
-        self.age_model = Classifier(n_output=101).to(self.device)
+        self.age_model = Classifier(n_output=8).to(self.device)
 
         self.gender_model = Classifier(n_output=2).to(self.device)
 
@@ -29,8 +30,17 @@ class AgeGenderPredictor(nn.Module):
             self.gender_model.parameters(), lr=lr, betas=(beta1, 0.999)
         )
 
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize(256, transforms.InterpolationMode.BICUBIC),
+                transforms.RandomCrop(256),
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+
     def forward(self, x):
-        self.image_input = x['img'].to(self.device)
+        self.image_input = vgg_preprocess(x['img']).to(self.device)
         self.age_real = x['age'].to(self.device)
         self.gender_real = x['gender'].to(self.device)
 
@@ -62,6 +72,10 @@ class AgeGenderPredictor(nn.Module):
         return age, gender
 
     def predict(self, img):
+        img = self.transform(img)
+        img = torch.unsqueeze(img, dim=0)
+        img = vgg_preprocess(img)
+        print(img.shape)
         with torch.no_grad():
             age = torch.argmax(self.age_model(self.vgg(img)))
             gender = torch.argmax(self.gender_model(self.vgg(img)))
