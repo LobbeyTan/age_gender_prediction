@@ -7,12 +7,13 @@ from PIL import Image
 
 class WikiDataset(Dataset):
 
-    def __init__(self, root_dir, train=True, tts_ratio=0.8) -> None:
+    def __init__(self, root_dir, train=True, tts_ratio=0.8, balance=False) -> None:
 
         self.root_dir = root_dir
 
         self.data = pd.read_csv(
-            os.path.join(root_dir, "preprocessed_data.csv")
+            os.path.join(
+                root_dir, "balance_data.csv" if balance else "preprocessed_data.csv")
         )
 
         train_size = int(self.data.shape[0] * tts_ratio)
