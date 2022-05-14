@@ -75,7 +75,6 @@ class AgeGenderPredictor(nn.Module):
         img = self.transform(img)
         img = torch.unsqueeze(img, dim=0)
         img = vgg_preprocess(img)
-        print(img.shape)
         with torch.no_grad():
             age = torch.argmax(self.age_model(self.vgg(img)))
             gender = torch.argmax(self.gender_model(self.vgg(img)))
