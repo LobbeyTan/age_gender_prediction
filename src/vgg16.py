@@ -2,6 +2,7 @@ from torch import nn
 import torch
 
 
+# The network architecture obtained from https://arxiv.org/abs/1409.1556
 class VGG16(nn.Module):
     def __init__(self):
         super(VGG16, self).__init__()
@@ -107,6 +108,7 @@ class VGG16(nn.Module):
         return h
 
 
+# Preprocessing step before image is inputed into VGG16 model
 def vgg_preprocess(batch, vgg_mean=False):
     tensortype = type(batch.data)
     (r, g, b) = torch.chunk(batch, 3, dim=1)
@@ -121,6 +123,7 @@ def vgg_preprocess(batch, vgg_mean=False):
     return batch
 
 
+# Create and load VGG16 model with pre-trained weights
 def load_vgg16(path, device=torch.device("cpu"), eval=True):
     vgg = VGG16()
     vgg.to(device)
